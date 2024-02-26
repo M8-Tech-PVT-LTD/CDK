@@ -38,8 +38,10 @@ def lambda_handler(request, response):
     if data.status_code == 200:
         details = json.loads(data.text)
         property_details = details.get('results', [])[0].get('property', {})
-
-        with open("properties-details.json", "w") as json_file:
-            json.dump(details, json_file, indent=4)
-
-        print("Property Details:", property_details)
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'text/plain'
+            },
+            'body': format(property_details)
+        }
