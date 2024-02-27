@@ -25,16 +25,14 @@ def get_cookies_and_soup(url):
     return session, soup
 
 
-def lambda_handler(event, context):
-    print('request: {}'.format(json.dumps(event)))
-    url = "https://www.royallepage.ca/en/property/ontario/toronto/30-ashford-dr/21424241/mlsw8077612/"
-    session, soup = get_cookies_and_soup(url)
-
-
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': format(event)
-    }
+# def lambda_handler(event, context):
+#     url = "https://www.royallepage.ca/en/property/ontario/toronto/30-ashford-dr/21424241/mlsw8077612/"
+#     session, soup = get_cookies_and_soup(url)
+#
+#     return {
+#         'statusCode': 200,
+#         'headers': {
+#             'Content-Type': 'text/plain'
+#         },
+#         'body': format(event)
+#     }

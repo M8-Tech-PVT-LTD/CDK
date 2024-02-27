@@ -2,9 +2,34 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
+field_mapping = {
+    "bathroom_count": "bathrooms",
+    "bedroom_count": "bedrooms",
+    "heating_system": "heating",
+    "rental_appliances": "appliances_newdev",
+    "proximity": "proximity",
+    "sewage_system": "sewage_system",
+    "roofing": "roof",
+    "view": "view",
+    "zoning": "zonage",
+    "real_estate_broker(s)": "uls_number",
+    "mls": "uls_number_condo",
+    "building_year:": "year_built_condo",
+    "type": "unit_type",
+    "municipal_taxes": "tax_municipal",
+    "school_taxes": "tax_school",
+    "condo_fees": "cost_common_monthly",
+    "additional_information": "website_url_en"
+}
 
-def lambda_handler(request, response):
-    url = request['url']
+
+def lambda_handler(event, response):
+    # if request["url"]:
+    #     url = request["url"]
+    # else:
+    # url = "https://groupelavoie.com/en/houses-for-sale/bungalow-6515-rue-booker-j4z3s1-brossard-14203465/"
+    body = json.loads(event["body"])
+    url = body["url"]
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.select('table')
@@ -12,10 +37,12 @@ def lambda_handler(request, response):
     bathroom_element = soup.find('i', class_='c-property-details-bar__bathrooms')
     bedroom_element = soup.find('i', class_='c-property-details-bar__bedrooms')
 
-    bathroom_count = bathroom_element.find_next('span', class_='c-property-details-bar__number').text.strip()
-    bedroom_count = bedroom_element.find_next('span', class_='c-property-details-bar__number').text.strip()
-    data['bathroom_count'] = bathroom_count
-    data['bedroom_count'] = bedroom_count
+    if bathroom_element:
+        bathroom_count = bathroom_element.find_next('span', class_='c-property-details-bar__number').text.strip()
+        data['bathroom_count'] = bathroom_count
+    if bedroom_element:
+        bedroom_count = bedroom_element.find_next('span', class_='c-property-details-bar__number').text.strip()
+        data['bedroom_count'] = bedroom_count
 
     for row in table:
         for tr in row.find_all('tr'):
@@ -39,13 +66,17 @@ def lambda_handler(request, response):
             value = value_element.text.strip()
             data[key] = value
 
-    # json_students_data = json.dumps(data, indent=2)
-    # with open('data.json', 'w') as json_file:
-    #     json_file.write(json_students_data)
+    mapped_data = {field_mapping.get(key, key): value for key, value in data.items()}
+
     return {
         'statusCode': 200,
         'headers': {
             'Content-Type': 'text/plain'
         },
-        'body': format(data)
+        'body': format(mapped_data)
     }
+
+# if __name__ == '__main__':
+#     lambda_handler({
+#         'url': "https://groupelavoie.com/en/houses-for-sale/bungalow-6515-rue-booker-j4z3s1-brossard-14203465/"},
+#         None)
